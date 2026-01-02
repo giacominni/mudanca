@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planejador de Mudança | Orçamento Detalhado</title>
+    <style>
+        /* --- FONTES --- */
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap');
+
+        :root {
+            --bg-cream: #FAF9F0;
+            --wine-red: #722F37;
+            --military-green: #556B2F; 
+            --white: #ffffff;
+            --shadow-color: rgba(85, 107, 47, 0.15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+
+        body {
+            background-color: var(--bg-cream);
+            color: #333;
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* --- DECORAÇÃO --- */
+        .vertical-line {
+            position: fixed; left: 40px; top: 0; bottom: 0; width: 1px;
+            background-color: var(--military-green); opacity: 0.3; z-index: 0;
+        }
+        
+        .circle-bg {
+            position: fixed; top: -10%; right: -10%; width: 600px; height: 600px;
+            background-color: var(--military-green); border-radius: 50%; opacity: 0.05; 
+            pointer-events: none; z-index: 0;
+        }
+
+        /* --- LAYOUT --- */
+        .main-container {
+            width: 100%; max-width: 1200px;
+            position: relative; z-index: 2;
+            display: flex; flex-direction: column; gap: 40px;
+        }
+
+        header {
+            border-bottom: 2px solid var(--military-green);
+            padding-bottom: 20px;
+        }
+        
+        h1 { 
+            font-size: 3rem; line-height: 0.9; font-weight: 700; letter-spacing: -1.5px; 
+            color: var(--military-green); 
+        }
+        
+        .subtitle { 
+            font-size: 0.9rem; letter-spacing: 1px; color: #666; margin-top: 5px;
+        }
+
+        /* --- BANNER VENCEDOR --- */
+        #winner-banner {
+            display: none; 
+            background: var(--white);
+            border: 2px solid var(--military-green);
+            padding: 25px;
+            box-shadow: 8px 8px 0 var(--shadow-color);
+        }
+        .winner-title { font-size: 0.8rem; text-transform: uppercase; color: var(--wine-red); font-weight: bold; letter-spacing: 2px; }
+        .winner-name { font-size: 2.5rem; font-weight: 700; color: var(--military-green); margin: 5px 0; }
+
+        /* --- GRID --- */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 40px;
+        }
+
+        @media (max-width: 900px) {
+            .content-grid { grid-template-columns: 1fr; }
+            .vertical-line { display: none; }
+            h1 { font-size: 2rem; }
+        }
+
+        .panel-title {
+            font-size: 1.2rem; font-weight: 700; color: var(--military-green);
+            text-transform: uppercase; border-left: 4px solid var(--military-green);
+            padding-left: 10px; margin-bottom: 20px;
+        }
+
+        /* --- INPUTS --- */
+        .form-box {
+            background: var(--white); 
+            border: 1px solid var(--military-green); 
+            padding: 25px; 
+            box-shadow: 6px 6px 0 var(--shadow-color); 
+            border-radius: 4px;
+        }
+
+        input:not([type="checkbox"]):not([type="radio"]) {
+            width: 100%; 
+            height: 50px; 
+            padding: 0 15px; 
+            background: #ffffff; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 8px; 
+            font-family: 'Space Grotesk', sans-serif; 
+            font-size: 1rem; 
+            color: #333;
+            margin-bottom: 15px;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+        input:not([type="checkbox"]):not([type="radio"]):focus { 
+            border-color: var(--military-green); 
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(85, 107, 47, 0.15);
+            transform: translateY(-1px);
+        }
+
+        /* Labels pequenos acima dos inputs */
+        .input-label {
+            font-size: 0.75rem; text-transform:uppercase; font-weight:bold; 
+            color: #777; display:block; margin-bottom:5px; margin-left: 2px;
+        }
+
+        /* Display de Totais (Somados) */
+        .total-display-box {
+            background: #f0f4ed; border: 1px dashed var(--military-green);
+            padding: 10px 15px; border-radius: 6px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .total-display-label { font-size: 0.8rem; font-weight: bold; color: var(--military-green); text-transform: uppercase; }
+        .total-display-value { font-size: 1.2rem; font-weight: 700; color: #333; }
+
+        /* --- CARDS DE APARTAMENTO --- */
+        .apt-card {
+            background: var(--white);
+            border: 1px solid #ddd;
+            border-top: 4px solid var(--military-green); 
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        
+        .apt-content { padding: 25px; }
+
+        .apt-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 15px; 
+        }
+        
+        .apt-name { font-size: 1.5rem; font-weight: 700; color: #222; }
+        .apt-tag { 
+            font-size: 0.75rem; font-weight: bold; text-transform: uppercase; 
+            padding: 5px 10px; border-radius: 4px;
+        }
+        .apt-tag.furnished { background: #e6f0e6; color: var(--military-green); }
+        .apt-tag.empty { background: #fff0f0; color: var(--wine-red); }
+
+        /* Mapa e Preço */
+        .mini-map-container {
+            width: 100%; height: 200px; background: #eee; margin-bottom: 20px;
+            border-radius: 8px; overflow: hidden; border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #e0e0e0;
+        }
+        iframe { width: 100%; height: 100%; border: 0; }
+
+        .price-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;
+            background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee;
+        }
+        .price-box label { font-size: 0.7rem; color: #666; text-transform: uppercase; display: block; font-weight: 600; }
+        .price-box span { font-size: 1.3rem; font-weight: 700; color: var(--military-green); }
+
+        /* --- BARRA DE ORÇAMENTO --- */
+        .budget-bar-container {
+            margin-bottom: 25px;
+            padding: 15px; background: #fffdf5; border: 1px dashed #dcdcdc; border-radius: 6px;
+        }
+        .budget-label { font-size: 0.8rem; font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .progress-bg { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; transition: width 0.5s; border-radius: 4px; }
+        .budget-feedback { font-size: 0.85rem; margin-top: 10px; color: #555; line-height: 1.4; }
+        
+        /* Cores de status */
+        .status-safe { background: var(--military-green); }
+        .status-warn { background: #d4a017; } 
+        .status-danger { background: var(--wine-red); }
+        .text-safe { color: var(--military-green); }
+        .text-warn { color: #b8860b; }
+        .text-danger { color: var(--wine-red); }
+
+        /* Prós e Contras */
+        .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.9rem; margin-bottom: 20px;}
+        .pc-col h4 { font-size: 0.75rem; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
+        .pc-col ul { list-style: none; padding-left: 0; }
+        .pc-col li { margin-bottom: 4px; color: #555; }
+        .pc-col li::before { content: "•"; margin-right: 5px; font-weight: bold; }
+        .pc-col.pros h4 { color: var(--military-green); }
+        .pc-col.cons h4 { color: var(--wine-red); }
+
+        .apt-footer {
+            background: #f4f4f4; padding: 15px 25px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 1px solid #eaeaea;
+        }
+        .visit-btn { 
+            text-decoration: none; background: var(--military-green); color: white; 
+            font-weight: bold; font-size: 0.9rem; padding: 10px 20px; border-radius: 6px; transition: 0.2s;
+        }
+        .visit-btn:hover { background: #445725; }
+
+        /* --- GERAL --- */
+        .btn { cursor: pointer; font-family: 'Space Grotesk', sans-serif; border: none; font-weight: bold; transition: 0.2s; }
+        .btn-add {
+            background: var(--military-green); color: var(--white);
+            padding: 14px 20px; width: 100%; text-transform: uppercase; letter-spacing: 1px;
+            border-radius: 8px; font-size: 1rem;
+        }
+        .btn-add:hover { background: #445725; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(85, 107, 47, 0.3); }
+        
+        .btn-del { color: #ccc; background: transparent; font-size: 1.5rem; padding: 0 5px; line-height: 1; }
+        .btn-del:hover { color: var(--wine-red); }
+
+        .checkbox-wrapper { display: flex; align-items: center; gap: 10px; margin: 15px 0 25px 0; cursor: pointer; }
+        .custom-checkbox {
+            width: 24px; height: 24px; border: 2px solid var(--military-green); border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; background: white;
+        }
+        input[type="checkbox"]:checked + .custom-checkbox { background: var(--military-green); }
+        input[type="checkbox"]:checked + .custom-checkbox::after { content: '✓'; color: white; font-size: 16px; }
+        
+    </style>
+</head>
+<body>
+
+    <div class="circle-bg"></div>
+    <div class="vertical-line"></div>
+
+    <div class="main-container">
+        
+        <header>
+            <h1>DECISION<br>MAKER<span style="color: var(--wine-red)">.</span></h1>
+            <div class="subtitle">Planejamento de Mudança // Comparativo de Custos & Orçamento</div>
+        </header>
+
+        <div id="winner-banner">
+            <div class="winner-title">🏆 Melhor Custo-Benefício (1º Ano)</div>
+            <div class="winner-name" id="win-name">--</div>
+            <div style="font-size: 1rem; color: #555; line-height: 1.5;" id="win-details">--</div>
+        </div>
+
+        <div class="content-grid">
+            
+            <div class="panel">
+                
+                <div class="panel-title">Raio-X Financeiro</div>
+                <div class="form-box" style="margin-bottom: 30px; background: #fcfcfc;">
+                    
+                    <label class="input-label">Salário Fixo (Mensal)</label>
+                    <input type="number" id="in-fixed" placeholder="R$ 0,00" oninput="saveFinancials()">
+                    
+                    <label class="input-label">Freela / Renda Extra (Média Mensal)</label>
+                    <input type="number" id="in-freela" placeholder="R$ 0,00" oninput="saveFinancials()">
+
+                    <div class="total-display-box">
+                        <span class="total-display-label">Renda Total:</span>
+                        <span class="total-display-value" id="disp-total-income">R$ 0,00</span>
+                    </div>
+
+                    <hr style="border:0; border-top:1px solid #eee; margin-bottom: 15px;">
+
+                    <label class="input-label">Compras de Mês (Mercado/Limpeza)</label>
+                    <input type="number" id="in-shopping" placeholder="Estimativa R$ 800,00" oninput="saveFinancials()">
+
+                </div>
+
+                <div class="panel-title">Kit Inicial (Móveis)</div>
+                <div class="form-box">
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px; line-height: 1.4;">
+                        Itens para comprar caso alugue um local vazio.
+                    </p>
+
+                    <div id="furniture-list" style="margin-bottom: 20px;">
+                        </div>
+
+                    <div style="text-align: right; font-weight: bold; color: var(--military-green); font-size: 1.2rem; padding: 15px 0; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; margin-bottom: 25px;">
+                        Investimento: <span id="furn-total-val">R$ 0,00</span>
+                    </div>
+
+                    <h4 style="font-size:0.75rem; text-transform:uppercase; color:#888; margin-bottom:12px; font-weight: bold;">Adicionar Novo Item</h4>
+                    <input type="text" id="new-furn-item" placeholder="Ex: Geladeira">
+                    <input type="number" id="new-furn-price" placeholder="Valor Estimado (R$)">
+                    <button class="btn btn-add" onclick="addFurniture()">+ Adicionar</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Comparativo de Imóveis</div>
+                
+                <div class="form-box" style="margin-bottom: 40px;">
+                    <h3 style="margin-bottom: 25px; color: var(--military-green); font-size: 1.1rem; text-transform: uppercase;">Nova Opção</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <label class="input-label">Apelido</label>
+                            <input type="text" id="apt-name" placeholder="Ex: Ap. Centro">
+                        </div>
+                        <div>
+                            <label class="input-label">Endereço/Bairro</label>
+                            <input type="text" id="apt-address" placeholder="Para o mapa">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <label class="input-label">Aluguel</label>
+                            <input type="number" id="apt-rent" placeholder="R$">
+                        </div>
+                        <div>
+                            <label class="input-label">Condomínio + IPTU</label>
+                            <input type="number" id="apt-condo" placeholder="R$">
+                        </div>
+                    </div>
+
+                    <label class="input-label">Link</label>
+                    <input type="text" id="apt-link" placeholder="ZAP, Airbnb, QuintoAndar...">
+                    
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="apt-furnished" style="display:none;">
+                        <div class="custom-checkbox"></div>
+                        <span style="font-size: 1rem; color: #333;">O local já é mobiliado?</span>
+                    </label>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <input type="text" id="apt-pros" placeholder="Prós (separe por vírgula)">
+                        <input type="text" id="apt-cons" placeholder="Contras (separe por vírgula)">
+                    </div>
+
+                    <button class="btn btn-add" onclick="addApartment()" style="margin-top: 10px;">Adicionar Comparativo</button>
+                </div>
+
+                <div id="apartments-list">
+                    </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- ESTADO (DADOS) ---
+        let state = JSON.parse(localStorage.getItem('move_planner_db_v5')) || {
+            incomeFixed: 0,
+            incomeFreela: 0,
+            monthlyShopping: 0,
+            furniture: [
+                { id: 1, name: 'Geladeira', price: 2200 },
+                { id: 2, name: 'Cama Box', price: 1500 },
+                { id: 3, name: 'Máquina de Lavar', price: 1800 }
+            ],
+            apartments: [
+                { 
+                    id: 1, name: 'Studio Centro', address: 'Av Paulista, São Paulo', rent: 2000, condo: 400, furnished: true, link: 'https://google.com',
+                    pros: ['Perto do trabalho', 'Prédio Novo'], cons: ['Pequeno (20m²)']
+                }
+            ]
+        };
+
+        // --- LÓGICA ---
+        function save() {
+            localStorage.setItem('move_planner_db_v5', JSON.stringify(state));
+            render();
+        }
+
+        function saveFinancials() {
+            state.incomeFixed = Number(document.getElementById('in-fixed').value);
+            state.incomeFreela = Number(document.getElementById('in-freela').value);
+            state.monthlyShopping = Number(document.getElementById('in-shopping').value);
+            save();
+        }
+
+        function getFurnitureTotal() {
+            return state.furniture.reduce((acc, item) => acc + Number(item.price), 0);
+        }
+
+        function getFirstYearCost(apt) {
+            const monthly = Number(apt.rent) + Number(apt.condo);
+            const annual = monthly * 12;
+            if (apt.furnished) return annual;
+            return annual + getFurnitureTotal();
+        }
+
+        function getBestOption() {
+            if (state.apartments.length === 0) return null;
+            return state.apartments.reduce((prev, curr) => 
+                getFirstYearCost(prev) < getFirstYearCost(curr) ? prev : curr
+            );
+        }
+
+        // --- RENDERIZAÇÃO ---
+        function render() {
+            // Atualiza inputs se não estiverem focados (para evitar bug de digitação)
+            if(document.activeElement.id !== 'in-fixed') document.getElementById('in-fixed').value = state.incomeFixed || '';
+            if(document.activeElement.id !== 'in-freela') document.getElementById('in-freela').value = state.incomeFreela || '';
+            if(document.activeElement.id !== 'in-shopping') document.getElementById('in-shopping').value = state.monthlyShopping || '';
+
+            const totalIncome = (state.incomeFixed || 0) + (state.incomeFreela || 0);
+            const shoppingCost = state.monthlyShopping || 0;
+            
+            document.getElementById('disp-total-income').innerText = `R$ ${totalIncome.toLocaleString('pt-BR')}`;
+
+            const furnTotal = getFurnitureTotal();
+            const best = getBestOption();
+
+            // 1. Render Móveis
+            const furnList = document.getElementById('furniture-list');
+            furnList.innerHTML = state.furniture.map(f => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
+                    <span style="font-size: 1rem; color: #333;">${f.name}</span>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <span style="font-weight:bold; color:#555">R$ ${f.price}</span>
+                        <button class="btn btn-del" onclick="delFurn(${f.id})">×</button>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('furn-total-val').innerText = `R$ ${furnTotal.toLocaleString('pt-BR')}`;
+
+            // 2. Render Vencedor
+            const winBanner = document.getElementById('winner-banner');
+            if (best) {
+                winBanner.style.display = 'block';
+                document.getElementById('win-name').innerText = best.name;
+                const cost = getFirstYearCost(best);
+                const desc = best.furnished 
+                    ? `Opção Mobiliada (Sem custo de móveis)` 
+                    : `Opção Vazia (Inclui R$ ${furnTotal.toLocaleString('pt-BR')} de investimento)`;
+                document.getElementById('win-details').innerHTML = 
+                    `${desc} <br> <strong style="color:var(--wine-red)">Custo Total 1º Ano: R$ ${cost.toLocaleString('pt-BR')}</strong>`;
+            } else {
+                winBanner.style.display = 'none';
+            }
+
+            // 3. Render Aptos
+            const aptList = document.getElementById('apartments-list');
+            aptList.innerHTML = state.apartments.map(apt => {
+                const isWinner = best && best.id === apt.id;
+                const totalYear = getFirstYearCost(apt);
+                const monthlyHousing = Number(apt.rent) + Number(apt.condo);
+                
+                // Cálculos de Renda
+                let budgetHtml = '';
+                if(totalIncome > 0) {
+                    // % Comprometida com Habitação (Rent + Condo)
+                    const percentHousing = (monthlyHousing / totalIncome) * 100;
+                    
+                    // Sobra Real = Renda - Habitação - Mercado
+                    const realRemaining = totalIncome - monthlyHousing - shoppingCost;
+                    
+                    let statusClass = 'status-safe';
+                    let textClass = 'text-safe';
+                    let statusText = 'Habitação Segura (Até 30%)';
+
+                    if(percentHousing > 30) { statusClass = 'status-warn'; textClass = 'text-warn'; statusText = 'Atenção (30% a 45%)'; }
+                    if(percentHousing > 45) { statusClass = 'status-danger'; textClass = 'text-danger'; statusText = 'Habitação Cara (> 45%)'; }
+
+                    const remainingClass = realRemaining > 0 ? 'text-safe' : 'text-danger';
+
+                    budgetHtml = `
+                    <div class="budget-bar-container">
+                        <div class="budget-label">
+                            <span class="${textClass}">${percentHousing.toFixed(1)}% Comprometido (Aluguel)</span>
+                            <span class="${textClass}">${statusText}</span>
+                        </div>
+                        <div class="progress-bg">
+                            <div class="progress-fill ${statusClass}" style="width: ${Math.min(percentHousing, 100)}%"></div>
+                        </div>
+                        <div class="budget-feedback">
+                            <div style="display:flex; justify-content:space-between; margin-top:5px; font-size: 0.9rem;">
+                                <span>(-) Mercado:</span>
+                                <span>R$ ${shoppingCost.toLocaleString('pt-BR')}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-top:5px; font-weight:bold; border-top:1px solid #ddd; padding-top:5px;">
+                                <span>Sobra Livre no Bolso:</span>
+                                <span class="${remainingClass}">R$ ${realRemaining.toLocaleString('pt-BR')}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                } else {
+                    budgetHtml = `<div class="budget-bar-container" style="background:#f9f9f9; color:#999; text-align:center; font-size:0.85rem;">Preencha a Renda para ver a análise</div>`;
+                }
+
+                // URL do Mapa
+                const encodedAddr = encodeURIComponent(apt.address);
+                const mapUrl = `https://maps.google.com/maps?q=${encodedAddr}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+
+                const borderClass = isWinner ? 'border: 2px solid var(--military-green); box-shadow: 0 10px 25px rgba(85,107,47,0.2);' : '';
+                const badge = isWinner ? '<div style="background:var(--military-green); color:white; padding:8px 15px; font-weight:bold; text-align:center; font-size:0.8rem; letter-spacing:1px;">★ MELHOR CUSTO-BENEFÍCIO</div>' : '';
+
+                return `
+                <div class="apt-card" style="${borderClass}">
+                    ${badge}
+                    <div class="apt-content">
+                        <div class="apt-header">
+                            <div>
+                                <div class="apt-name">${apt.name}</div>
+                                <div style="margin-top: 5px; display:flex; gap: 8px; align-items: center;">
+                                    <span class="apt-tag ${apt.furnished ? 'furnished' : 'empty'}">
+                                        ${apt.furnished ? 'Mobiliado' : 'Vazio'}
+                                    </span>
+                                    <div style="font-size:0.8rem; color:#888;">📍 ${apt.address || 'Sem endereço'}</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-del" onclick="delApt(${apt.id})" title="Remover">×</button>
+                        </div>
+
+                        ${apt.address ? `
+                        <div class="mini-map-container">
+                            <iframe src="${mapUrl}" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>
+                        </div>` : ''}
+
+                        <div class="price-grid">
+                            <div class="price-box">
+                                <label>Mensal (Aluguel + Cond)</label>
+                                <span>R$ ${monthlyHousing.toLocaleString('pt-BR')}</span>
+                            </div>
+                            <div class="price-box">
+                                <label>Projeção Anual</label>
+                                <span style="color: ${isWinner ? 'var(--wine-red)' : 'var(--military-green)'}">R$ ${totalYear.toLocaleString('pt-BR')}</span>
+                            </div>
+                        </div>
+
+                        ${budgetHtml}
+
+                        <div class="pros-cons">
+                            <div class="pc-col pros">
+                                <h4>Prós</h4>
+                                <ul>${apt.pros.map(p => `<li>${p}</li>`).join('')}</ul>
+                            </div>
+                            <div class="pc-col cons">
+                                <h4>Contras</h4>
+                                <ul>${apt.cons.map(c => `<li>${c}</li>`).join('')}</ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${apt.link ? `
+                    <div class="apt-footer">
+                        <span style="font-size:0.8rem; color:#777;">Anúncio original:</span>
+                        <a href="${apt.link}" target="_blank" class="visit-btn">Ver Anúncio ↗</a>
+                    </div>` : ''}
+                </div>
+                `;
+            }).join('');
+        }
+
+        // --- ACTIONS ---
+        function addFurniture() {
+            const name = document.getElementById('new-furn-item').value;
+            const price = document.getElementById('new-furn-price').value;
+            if(!name || !price) return;
+            state.furniture.push({ id: Date.now(), name, price: Number(price) });
+            document.getElementById('new-furn-item').value = '';
+            document.getElementById('new-furn-price').value = '';
+            save();
+        }
+
+        function delFurn(id) {
+            state.furniture = state.furniture.filter(f => f.id !== id);
+            save();
+        }
+
+        function addApartment() {
+            const name = document.getElementById('apt-name').value;
+            const rent = document.getElementById('apt-rent').value;
+            if(!name || !rent) return alert('Preencha pelo menos Nome e Aluguel');
+
+            state.apartments.push({
+                id: Date.now(),
+                name,
+                rent: Number(rent),
+                condo: Number(document.getElementById('apt-condo').value),
+                address: document.getElementById('apt-address').value,
+                furnished: document.getElementById('apt-furnished').checked,
+                link: document.getElementById('apt-link').value,
+                pros: document.getElementById('apt-pros').value.split(',').filter(x => x.trim()),
+                cons: document.getElementById('apt-cons').value.split(',').filter(x => x.trim())
+            });
+            
+            // Limpa form
+            document.getElementById('apt-name').value = '';
+            document.getElementById('apt-address').value = '';
+            document.getElementById('apt-rent').value = '';
+            document.getElementById('apt-condo').value = '';
+            document.getElementById('apt-link').value = '';
+            document.getElementById('apt-pros').value = '';
+            document.getElementById('apt-cons').value = '';
+            document.getElementById('apt-furnished').checked = false;
+            
+            save();
+        }
+
+        function delApt(id) {
+            if(confirm('Remover esta opção?')) {
+                state.apartments = state.apartments.filter(a => a.id !== id);
+                save();
+            }
+        }
+
+        // Iniciar
+        render();
+
+    </script>
+</body>
+</html>
