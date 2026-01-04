@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planejador de Mudança | Orçamento Detalhado</title>
+    <title>Planejador de Mudança | Completo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* --- FONTES --- */
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap');
@@ -79,10 +80,12 @@
             gap: 40px;
         }
 
+        /* RESPONSIVIDADE */
         @media (max-width: 900px) {
             .content-grid { grid-template-columns: 1fr; }
             .vertical-line { display: none; }
             h1 { font-size: 2rem; }
+            body { padding: 20px 10px; }
         }
 
         .panel-title {
@@ -100,7 +103,7 @@
             border-radius: 4px;
         }
 
-        input:not([type="checkbox"]):not([type="radio"]) {
+        input:not([type="checkbox"]):not([type="radio"]), select {
             width: 100%; 
             height: 50px; 
             padding: 0 15px; 
@@ -114,20 +117,26 @@
             transition: all 0.2s ease;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         }
-        input:not([type="checkbox"]):not([type="radio"]):focus { 
+        input:not([type="checkbox"]):not([type="radio"]):focus, select:focus { 
             border-color: var(--military-green); 
             background: #fff;
             box-shadow: 0 4px 12px rgba(85, 107, 47, 0.15);
             transform: translateY(-1px);
         }
 
-        /* Labels pequenos acima dos inputs */
         .input-label {
             font-size: 0.75rem; text-transform:uppercase; font-weight:bold; 
             color: #777; display:block; margin-bottom:5px; margin-left: 2px;
         }
 
-        /* Display de Totais (Somados) */
+        .two-cols {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+        }
+        @media (max-width: 600px) {
+            .two-cols { grid-template-columns: 1fr; gap: 0; }
+        }
+
+        /* Display de Totais */
         .total-display-box {
             background: #f0f4ed; border: 1px dashed var(--military-green);
             padding: 10px 15px; border-radius: 6px; margin-bottom: 20px;
@@ -136,6 +145,15 @@
         .total-display-label { font-size: 0.8rem; font-weight: bold; color: var(--military-green); text-transform: uppercase; }
         .total-display-value { font-size: 1.2rem; font-weight: 700; color: #333; }
 
+        /* --- CARDS DE BAIRRO (NOVO) --- */
+        .neighborhood-item {
+            background: #fff; border: 1px solid #e0e0e0; border-radius: 8px;
+            padding: 15px; margin-bottom: 10px; position: relative;
+        }
+        .neighborhood-item h4 { margin-bottom: 8px; color: var(--military-green); font-size: 1rem; }
+        .nb-stats { display: flex; gap: 15px; font-size: 0.85rem; color: #555; flex-wrap: wrap;}
+        .nb-stat-item { display: flex; align-items: center; gap: 6px; }
+        
         /* --- CARDS DE APARTAMENTO --- */
         .apt-card {
             background: var(--white);
@@ -159,11 +177,19 @@
         .apt-name { font-size: 1.5rem; font-weight: 700; color: #222; }
         .apt-tag { 
             font-size: 0.75rem; font-weight: bold; text-transform: uppercase; 
-            padding: 5px 10px; border-radius: 4px;
+            padding: 5px 10px; border-radius: 4px; display: inline-block;
         }
         .apt-tag.furnished { background: #e6f0e6; color: var(--military-green); }
         .apt-tag.empty { background: #fff0f0; color: var(--wine-red); }
 
+        /* Neighborhood Info dentro do Apt Card */
+        .nb-info-bar {
+            background: #f4f6f0; border-radius: 6px; padding: 10px 15px;
+            margin-bottom: 20px; display: flex; justify-content: space-between;
+            font-size: 0.9rem; border: 1px solid #e1e6db; flex-wrap: wrap; gap: 10px;
+        }
+        .nb-info-item { display: flex; align-items: center; gap: 8px; }
+        
         /* Mapa e Preço */
         .mini-map-container {
             width: 100%; height: 200px; background: #eee; margin-bottom: 20px;
@@ -176,6 +202,10 @@
             display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;
             background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee;
         }
+        @media (max-width: 500px) {
+            .price-grid { grid-template-columns: 1fr; }
+        }
+
         .price-box label { font-size: 0.7rem; color: #666; text-transform: uppercase; display: block; font-weight: 600; }
         .price-box span { font-size: 1.3rem; font-weight: 700; color: var(--military-green); }
 
@@ -199,10 +229,13 @@
 
         /* Prós e Contras */
         .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.9rem; margin-bottom: 20px;}
+        @media (max-width: 600px) {
+            .pros-cons { grid-template-columns: 1fr; gap: 10px; }
+        }
         .pc-col h4 { font-size: 0.75rem; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
         .pc-col ul { list-style: none; padding-left: 0; }
-        .pc-col li { margin-bottom: 4px; color: #555; }
-        .pc-col li::before { content: "•"; margin-right: 5px; font-weight: bold; }
+        .pc-col li { margin-bottom: 4px; color: #555; display: flex; align-items: flex-start; gap: 8px; }
+        .pc-col li i { font-size: 6px; margin-top: 6px; }
         .pc-col.pros h4 { color: var(--military-green); }
         .pc-col.cons h4 { color: var(--wine-red); }
 
@@ -214,6 +247,7 @@
         .visit-btn { 
             text-decoration: none; background: var(--military-green); color: white; 
             font-weight: bold; font-size: 0.9rem; padding: 10px 20px; border-radius: 6px; transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
         }
         .visit-btn:hover { background: #445725; }
 
@@ -222,20 +256,22 @@
         .btn-add {
             background: var(--military-green); color: var(--white);
             padding: 14px 20px; width: 100%; text-transform: uppercase; letter-spacing: 1px;
-            border-radius: 8px; font-size: 1rem;
+            border-radius: 8px; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px;
         }
         .btn-add:hover { background: #445725; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(85, 107, 47, 0.3); }
         
-        .btn-del { color: #ccc; background: transparent; font-size: 1.5rem; padding: 0 5px; line-height: 1; }
-        .btn-del:hover { color: var(--wine-red); }
+        .btn-del { color: #ccc; background: transparent; font-size: 1rem; padding: 5px; line-height: 1; border-radius: 4px; }
+        .btn-del:hover { color: var(--wine-red); background: #fff0f0; }
 
         .checkbox-wrapper { display: flex; align-items: center; gap: 10px; margin: 15px 0 25px 0; cursor: pointer; }
         .custom-checkbox {
             width: 24px; height: 24px; border: 2px solid var(--military-green); border-radius: 6px;
             display: flex; align-items: center; justify-content: center; background: white;
+            transition: all 0.2s;
         }
         input[type="checkbox"]:checked + .custom-checkbox { background: var(--military-green); }
-        input[type="checkbox"]:checked + .custom-checkbox::after { content: '✓'; color: white; font-size: 16px; }
+        input[type="checkbox"]:checked + .custom-checkbox i { display: block; color: white; font-size: 14px; }
+        .custom-checkbox i { display: none; }
         
     </style>
 </head>
@@ -252,7 +288,7 @@
         </header>
 
         <div id="winner-banner">
-            <div class="winner-title">🏆 Melhor Custo-Benefício (1º Ano)</div>
+            <div class="winner-title"><i class="fa-solid fa-trophy"></i> Melhor Custo-Benefício (1º Ano)</div>
             <div class="winner-name" id="win-name">--</div>
             <div style="font-size: 1rem; color: #555; line-height: 1.5;" id="win-details">--</div>
         </div>
@@ -263,42 +299,73 @@
                 
                 <div class="panel-title">Raio-X Financeiro</div>
                 <div class="form-box" style="margin-bottom: 30px; background: #fcfcfc;">
-                    
                     <label class="input-label">Salário Fixo (Mensal)</label>
                     <input type="number" id="in-fixed" placeholder="R$ 0,00" oninput="saveFinancials()">
                     
-                    <label class="input-label">Freela / Renda Extra (Média Mensal)</label>
+                    <label class="input-label">Freela / Renda Extra</label>
                     <input type="number" id="in-freela" placeholder="R$ 0,00" oninput="saveFinancials()">
 
                     <div class="total-display-box">
                         <span class="total-display-label">Renda Total:</span>
                         <span class="total-display-value" id="disp-total-income">R$ 0,00</span>
                     </div>
-
                     <hr style="border:0; border-top:1px solid #eee; margin-bottom: 15px;">
-
-                    <label class="input-label">Compras de Mês (Mercado/Limpeza)</label>
+                    <label class="input-label">Mercado Mensal</label>
                     <input type="number" id="in-shopping" placeholder="Estimativa R$ 800,00" oninput="saveFinancials()">
+                </div>
 
+                <div class="panel-title">Meus Bairros</div>
+                <div class="form-box" style="margin-bottom: 30px;">
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">
+                        Cadastre regiões para vincular aos aptos.
+                    </p>
+                    
+                    <div id="neighborhood-list" style="margin-bottom: 20px;">
+                        </div>
+
+                    <h4 style="font-size:0.75rem; text-transform:uppercase; color:#888; margin-bottom:12px; font-weight: bold; border-top: 1px dashed #ccc; padding-top:15px;">Adicionar Região</h4>
+                    
+                    <input type="text" id="nb-name" placeholder="Nome (Ex: Vila Mariana)">
+                    
+                    <div class="two-cols">
+                        <div>
+                            <label class="input-label">Metrô (min a pé)</label>
+                            <input type="number" id="nb-subway" placeholder="min">
+                        </div>
+                        <div>
+                            <label class="input-label">Segurança (1-5)</label>
+                            <input type="number" id="nb-safety" placeholder="1-5" max="5" min="1">
+                        </div>
+                    </div>
+                    
+                    <div class="two-cols">
+                        <select id="nb-cost">
+                            <option value="">Custo de Vida...</option>
+                            <option value="1">$ (Baixo)</option>
+                            <option value="2">$$ (Médio)</option>
+                            <option value="3">$$$ (Alto)</option>
+                        </select>
+                        <select id="nb-market">
+                            <option value="">Dist. Mercado...</option>
+                            <option value="Perto (a pé)">Perto (a pé)</option>
+                            <option value="Médio (Carro)">Médio (Carro)</option>
+                            <option value="Longe">Longe</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-add" onclick="addNeighborhood()"><i class="fa-solid fa-plus"></i> Salvar Bairro</button>
                 </div>
 
                 <div class="panel-title">Kit Inicial (Móveis)</div>
                 <div class="form-box">
-                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px; line-height: 1.4;">
-                        Itens para comprar caso alugue um local vazio.
-                    </p>
-
-                    <div id="furniture-list" style="margin-bottom: 20px;">
-                        </div>
-
+                    <div id="furniture-list" style="margin-bottom: 20px;"></div>
                     <div style="text-align: right; font-weight: bold; color: var(--military-green); font-size: 1.2rem; padding: 15px 0; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; margin-bottom: 25px;">
                         Investimento: <span id="furn-total-val">R$ 0,00</span>
                     </div>
-
-                    <h4 style="font-size:0.75rem; text-transform:uppercase; color:#888; margin-bottom:12px; font-weight: bold;">Adicionar Novo Item</h4>
+                    <h4 style="font-size:0.75rem; text-transform:uppercase; color:#888; margin-bottom:12px; font-weight: bold;">Adicionar Item</h4>
                     <input type="text" id="new-furn-item" placeholder="Ex: Geladeira">
                     <input type="number" id="new-furn-price" placeholder="Valor Estimado (R$)">
-                    <button class="btn btn-add" onclick="addFurniture()">+ Adicionar</button>
+                    <button class="btn btn-add" onclick="addFurniture()"><i class="fa-solid fa-plus"></i> Adicionar</button>
                 </div>
             </div>
 
@@ -308,18 +375,23 @@
                 <div class="form-box" style="margin-bottom: 40px;">
                     <h3 style="margin-bottom: 25px; color: var(--military-green); font-size: 1.1rem; text-transform: uppercase;">Nova Opção</h3>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="two-cols">
                         <div>
                             <label class="input-label">Apelido</label>
                             <input type="text" id="apt-name" placeholder="Ex: Ap. Centro">
                         </div>
                         <div>
-                            <label class="input-label">Endereço/Bairro</label>
-                            <input type="text" id="apt-address" placeholder="Para o mapa">
+                            <label class="input-label">Bairro / Região</label>
+                            <select id="apt-neighborhood-select">
+                                <option value="">Selecione...</option>
+                                </select>
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <label class="input-label">Endereço (Opcional, para mapa)</label>
+                    <input type="text" id="apt-address" placeholder="Rua X, 123">
+
+                    <div class="two-cols">
                         <div>
                             <label class="input-label">Aluguel</label>
                             <input type="number" id="apt-rent" placeholder="R$">
@@ -331,20 +403,20 @@
                     </div>
 
                     <label class="input-label">Link</label>
-                    <input type="text" id="apt-link" placeholder="ZAP, Airbnb, QuintoAndar...">
+                    <input type="text" id="apt-link" placeholder="Cole o Link...">
                     
                     <label class="checkbox-wrapper">
                         <input type="checkbox" id="apt-furnished" style="display:none;">
-                        <div class="custom-checkbox"></div>
+                        <div class="custom-checkbox"><i class="fa-solid fa-check"></i></div>
                         <span style="font-size: 1rem; color: #333;">O local já é mobiliado?</span>
                     </label>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="two-cols">
                         <input type="text" id="apt-pros" placeholder="Prós (separe por vírgula)">
                         <input type="text" id="apt-cons" placeholder="Contras (separe por vírgula)">
                     </div>
 
-                    <button class="btn btn-add" onclick="addApartment()" style="margin-top: 10px;">Adicionar Comparativo</button>
+                    <button class="btn btn-add" onclick="addApartment()" style="margin-top: 10px;"><i class="fa-solid fa-plus"></i> Adicionar Comparativo</button>
                 </div>
 
                 <div id="apartments-list">
@@ -356,26 +428,30 @@
 
     <script>
         // --- ESTADO (DADOS) ---
-        let state = JSON.parse(localStorage.getItem('move_planner_db_v5')) || {
+        // V7 - Adicionado Custo ($) nos bairros
+        let state = JSON.parse(localStorage.getItem('move_planner_db_v7')) || {
             incomeFixed: 0,
             incomeFreela: 0,
             monthlyShopping: 0,
+            neighborhoods: [
+                { id: 1, name: 'Centro Histórico', subway: 5, safety: 2, market: 'Perto (a pé)', cost: 1 },
+                { id: 2, name: 'Vila Madalena', subway: 15, safety: 4, market: 'Médio (Carro)', cost: 3 }
+            ],
             furniture: [
                 { id: 1, name: 'Geladeira', price: 2200 },
-                { id: 2, name: 'Cama Box', price: 1500 },
-                { id: 3, name: 'Máquina de Lavar', price: 1800 }
+                { id: 2, name: 'Cama Box', price: 1500 }
             ],
             apartments: [
                 { 
-                    id: 1, name: 'Studio Centro', address: 'Av Paulista, São Paulo', rent: 2000, condo: 400, furnished: true, link: 'https://google.com',
-                    pros: ['Perto do trabalho', 'Prédio Novo'], cons: ['Pequeno (20m²)']
+                    id: 1, name: 'Studio Centro', neighborhoodId: 1, address: 'Praça da Sé, SP', rent: 1800, condo: 400, furnished: true, link: '',
+                    pros: ['Barato', 'Metrô na porta'], cons: ['Barulhento']
                 }
             ]
         };
 
         // --- LÓGICA ---
         function save() {
-            localStorage.setItem('move_planner_db_v5', JSON.stringify(state));
+            localStorage.setItem('move_planner_db_v7', JSON.stringify(state));
             render();
         }
 
@@ -404,104 +480,141 @@
             );
         }
 
+        function getCostSymbols(level) {
+            if(!level) return '-';
+            return '<i class="fa-solid fa-dollar-sign"></i>'.repeat(level);
+        }
+
         // --- RENDERIZAÇÃO ---
         function render() {
-            // Atualiza inputs se não estiverem focados (para evitar bug de digitação)
+            // Inputs Financeiros
             if(document.activeElement.id !== 'in-fixed') document.getElementById('in-fixed').value = state.incomeFixed || '';
             if(document.activeElement.id !== 'in-freela') document.getElementById('in-freela').value = state.incomeFreela || '';
             if(document.activeElement.id !== 'in-shopping') document.getElementById('in-shopping').value = state.monthlyShopping || '';
 
             const totalIncome = (state.incomeFixed || 0) + (state.incomeFreela || 0);
-            const shoppingCost = state.monthlyShopping || 0;
-            
             document.getElementById('disp-total-income').innerText = `R$ ${totalIncome.toLocaleString('pt-BR')}`;
 
-            const furnTotal = getFurnitureTotal();
-            const best = getBestOption();
+            // 1. Render Neighborhoods List & Select
+            const nbList = document.getElementById('neighborhood-list');
+            const nbSelect = document.getElementById('apt-neighborhood-select');
+            
+            // Populate Select Options (keep value if already selected but re-render list)
+            const currentSelectVal = nbSelect.value;
+            let optionsHtml = '<option value="">Selecione...</option>';
+            let listHtml = '';
 
-            // 1. Render Móveis
+            state.neighborhoods.forEach(nb => {
+                optionsHtml += `<option value="${nb.id}">${nb.name}</option>`;
+                
+                // Safety Color
+                let safeColor = nb.safety >= 4 ? '#556B2F' : (nb.safety === 3 ? '#d4a017' : '#722F37');
+                let costStr = getCostSymbols(nb.cost);
+
+                listHtml += `
+                <div class="neighborhood-item">
+                    <div style="display:flex; justify-content:space-between;">
+                        <h4>${nb.name}</h4>
+                        <button class="btn btn-del" onclick="delNeighborhood(${nb.id})" title="Remover"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                    <div class="nb-stats">
+                        <span class="nb-stat-item" title="Custo de Vida" style="color:#555; font-weight:bold;">${costStr}</span>
+                        <span class="nb-stat-item" title="Distância Metrô"><i class="fa-solid fa-train-subway"></i> ${nb.subway}min</span>
+                        <span class="nb-stat-item" title="Segurança" style="color:${safeColor}"><i class="fa-solid fa-shield-halved"></i> ${nb.safety}/5</span>
+                        <span class="nb-stat-item" title="Mercado"><i class="fa-solid fa-cart-shopping"></i> ${nb.market}</span>
+                    </div>
+                </div>`;
+            });
+
+            nbList.innerHTML = listHtml;
+            if(document.activeElement.id !== 'apt-neighborhood-select') {
+                nbSelect.innerHTML = optionsHtml;
+                nbSelect.value = currentSelectVal;
+            }
+
+            // 2. Render Furniture
             const furnList = document.getElementById('furniture-list');
             furnList.innerHTML = state.furniture.map(f => `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
                     <span style="font-size: 1rem; color: #333;">${f.name}</span>
                     <div style="display:flex; gap:10px; align-items:center;">
                         <span style="font-weight:bold; color:#555">R$ ${f.price}</span>
-                        <button class="btn btn-del" onclick="delFurn(${f.id})">×</button>
+                        <button class="btn btn-del" onclick="delFurn(${f.id})"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
                 </div>
             `).join('');
-            document.getElementById('furn-total-val').innerText = `R$ ${furnTotal.toLocaleString('pt-BR')}`;
+            document.getElementById('furn-total-val').innerText = `R$ ${getFurnitureTotal().toLocaleString('pt-BR')}`;
 
-            // 2. Render Vencedor
+            // 3. Render Aptos
+            const best = getBestOption();
+            const aptList = document.getElementById('apartments-list');
+            
+            // Banner
             const winBanner = document.getElementById('winner-banner');
             if (best) {
                 winBanner.style.display = 'block';
                 document.getElementById('win-name').innerText = best.name;
                 const cost = getFirstYearCost(best);
-                const desc = best.furnished 
-                    ? `Opção Mobiliada (Sem custo de móveis)` 
-                    : `Opção Vazia (Inclui R$ ${furnTotal.toLocaleString('pt-BR')} de investimento)`;
                 document.getElementById('win-details').innerHTML = 
-                    `${desc} <br> <strong style="color:var(--wine-red)">Custo Total 1º Ano: R$ ${cost.toLocaleString('pt-BR')}</strong>`;
+                    `Custo Total 1º Ano: <strong>R$ ${cost.toLocaleString('pt-BR')}</strong>`;
             } else {
                 winBanner.style.display = 'none';
             }
 
-            // 3. Render Aptos
-            const aptList = document.getElementById('apartments-list');
             aptList.innerHTML = state.apartments.map(apt => {
                 const isWinner = best && best.id === apt.id;
                 const totalYear = getFirstYearCost(apt);
                 const monthlyHousing = Number(apt.rent) + Number(apt.condo);
                 
-                // Cálculos de Renda
+                // Find Neighborhood Data
+                const nbData = state.neighborhoods.find(n => n.id == apt.neighborhoodId);
+
+                // Financials Logic
                 let budgetHtml = '';
                 if(totalIncome > 0) {
-                    // % Comprometida com Habitação (Rent + Condo)
                     const percentHousing = (monthlyHousing / totalIncome) * 100;
+                    const realRemaining = totalIncome - monthlyHousing - state.monthlyShopping;
+                    let statusClass = percentHousing > 45 ? 'status-danger' : (percentHousing > 30 ? 'status-warn' : 'status-safe');
                     
-                    // Sobra Real = Renda - Habitação - Mercado
-                    const realRemaining = totalIncome - monthlyHousing - shoppingCost;
-                    
-                    let statusClass = 'status-safe';
-                    let textClass = 'text-safe';
-                    let statusText = 'Habitação Segura (Até 30%)';
-
-                    if(percentHousing > 30) { statusClass = 'status-warn'; textClass = 'text-warn'; statusText = 'Atenção (30% a 45%)'; }
-                    if(percentHousing > 45) { statusClass = 'status-danger'; textClass = 'text-danger'; statusText = 'Habitação Cara (> 45%)'; }
-
-                    const remainingClass = realRemaining > 0 ? 'text-safe' : 'text-danger';
-
                     budgetHtml = `
                     <div class="budget-bar-container">
                         <div class="budget-label">
-                            <span class="${textClass}">${percentHousing.toFixed(1)}% Comprometido (Aluguel)</span>
-                            <span class="${textClass}">${statusText}</span>
+                            <span style="color:#555">${percentHousing.toFixed(1)}% Comprometido</span>
                         </div>
                         <div class="progress-bg">
                             <div class="progress-fill ${statusClass}" style="width: ${Math.min(percentHousing, 100)}%"></div>
                         </div>
                         <div class="budget-feedback">
-                            <div style="display:flex; justify-content:space-between; margin-top:5px; font-size: 0.9rem;">
-                                <span>(-) Mercado:</span>
-                                <span>R$ ${shoppingCost.toLocaleString('pt-BR')}</span>
-                            </div>
-                            <div style="display:flex; justify-content:space-between; margin-top:5px; font-weight:bold; border-top:1px solid #ddd; padding-top:5px;">
-                                <span>Sobra Livre no Bolso:</span>
-                                <span class="${remainingClass}">R$ ${realRemaining.toLocaleString('pt-BR')}</span>
+                            <div style="display:flex; justify-content:space-between; margin-top:5px; font-weight:bold;">
+                                <span>Sobra Livre:</span>
+                                <span class="${realRemaining > 0 ? 'text-safe' : 'text-danger'}">R$ ${realRemaining.toLocaleString('pt-BR')}</span>
                             </div>
                         </div>
                     </div>`;
-                } else {
-                    budgetHtml = `<div class="budget-bar-container" style="background:#f9f9f9; color:#999; text-align:center; font-size:0.85rem;">Preencha a Renda para ver a análise</div>`;
                 }
 
-                // URL do Mapa
-                const encodedAddr = encodeURIComponent(apt.address);
+                // Map URL
+                const encodedAddr = encodeURIComponent(apt.address || apt.name);
                 const mapUrl = `https://maps.google.com/maps?q=${encodedAddr}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+                
+                // Neighborhood Info Bar
+                let nbHtml = '';
+                if (nbData) {
+                    let safeColor = nbData.safety >= 4 ? '#556B2F' : '#d4a017';
+                    let costStr = getCostSymbols(nbData.cost);
+                    nbHtml = `
+                    <div class="nb-info-bar">
+                        <div class="nb-info-item" title="Custo de Vida"><i class="fa-solid fa-wallet"></i> <strong>${costStr}</strong></div>
+                        <div class="nb-info-item" title="Metrô"><i class="fa-solid fa-train-subway"></i> <strong>${nbData.subway}min</strong></div>
+                        <div class="nb-info-item" title="Segurança" style="color:${safeColor}"><i class="fa-solid fa-shield-halved"></i> <strong>${nbData.safety}/5</strong></div>
+                        <div class="nb-info-item" title="Mercado"><i class="fa-solid fa-cart-shopping"></i> <strong>${nbData.market}</strong></div>
+                    </div>`;
+                } else {
+                    nbHtml = `<div class="nb-info-bar" style="color:#999; justify-content:center;">Sem bairro vinculado</div>`;
+                }
 
                 const borderClass = isWinner ? 'border: 2px solid var(--military-green); box-shadow: 0 10px 25px rgba(85,107,47,0.2);' : '';
-                const badge = isWinner ? '<div style="background:var(--military-green); color:white; padding:8px 15px; font-weight:bold; text-align:center; font-size:0.8rem; letter-spacing:1px;">★ MELHOR CUSTO-BENEFÍCIO</div>' : '';
+                const badge = isWinner ? '<div style="background:var(--military-green); color:white; padding:8px 15px; font-weight:bold; text-align:center; font-size:0.8rem; letter-spacing:1px;"><i class="fa-solid fa-star"></i> MELHOR OPÇÃO</div>' : '';
 
                 return `
                 <div class="apt-card" style="${borderClass}">
@@ -510,15 +623,17 @@
                         <div class="apt-header">
                             <div>
                                 <div class="apt-name">${apt.name}</div>
-                                <div style="margin-top: 5px; display:flex; gap: 8px; align-items: center;">
+                                <div style="margin-top: 5px; display:flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                                     <span class="apt-tag ${apt.furnished ? 'furnished' : 'empty'}">
-                                        ${apt.furnished ? 'Mobiliado' : 'Vazio'}
+                                        ${apt.furnished ? '<i class="fa-solid fa-couch"></i> Mobiliado' : '<i class="fa-solid fa-box-open"></i> Vazio'}
                                     </span>
-                                    <div style="font-size:0.8rem; color:#888;">📍 ${apt.address || 'Sem endereço'}</div>
+                                    <span style="font-size:0.8rem; color:#888; font-weight:bold;"><i class="fa-solid fa-location-dot"></i> ${nbData ? nbData.name : 'Bairro ñ definido'}</span>
                                 </div>
                             </div>
-                            <button class="btn btn-del" onclick="delApt(${apt.id})" title="Remover">×</button>
+                            <button class="btn btn-del" onclick="delApt(${apt.id})" title="Remover"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
+                        
+                        ${nbHtml}
 
                         ${apt.address ? `
                         <div class="mini-map-container">
@@ -527,7 +642,7 @@
 
                         <div class="price-grid">
                             <div class="price-box">
-                                <label>Mensal (Aluguel + Cond)</label>
+                                <label>Mensal Total</label>
                                 <span>R$ ${monthlyHousing.toLocaleString('pt-BR')}</span>
                             </div>
                             <div class="price-box">
@@ -541,19 +656,18 @@
                         <div class="pros-cons">
                             <div class="pc-col pros">
                                 <h4>Prós</h4>
-                                <ul>${apt.pros.map(p => `<li>${p}</li>`).join('')}</ul>
+                                <ul>${apt.pros.map(p => `<li><i class="fa-solid fa-circle"></i> ${p}</li>`).join('')}</ul>
                             </div>
                             <div class="pc-col cons">
                                 <h4>Contras</h4>
-                                <ul>${apt.cons.map(c => `<li>${c}</li>`).join('')}</ul>
+                                <ul>${apt.cons.map(c => `<li><i class="fa-solid fa-circle"></i> ${c}</li>`).join('')}</ul>
                             </div>
                         </div>
                     </div>
 
                     ${apt.link ? `
                     <div class="apt-footer">
-                        <span style="font-size:0.8rem; color:#777;">Anúncio original:</span>
-                        <a href="${apt.link}" target="_blank" class="visit-btn">Ver Anúncio ↗</a>
+                        <a href="${apt.link}" target="_blank" class="visit-btn" style="width:100%; justify-content:center;">Ver Anúncio <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
                     </div>` : ''}
                 </div>
                 `;
@@ -561,6 +675,38 @@
         }
 
         // --- ACTIONS ---
+        function addNeighborhood() {
+            const name = document.getElementById('nb-name').value;
+            const subway = document.getElementById('nb-subway').value;
+            const safety = document.getElementById('nb-safety').value;
+            const market = document.getElementById('nb-market').value;
+            const cost = document.getElementById('nb-cost').value;
+
+            if(!name) return alert('Nome do bairro é obrigatório');
+
+            state.neighborhoods.push({
+                id: Date.now(),
+                name,
+                subway: subway || '?',
+                safety: safety || 3,
+                market: market || '?',
+                cost: cost || 2
+            });
+
+            // Limpa form
+            document.getElementById('nb-name').value = '';
+            document.getElementById('nb-subway').value = '';
+            document.getElementById('nb-safety').value = '';
+            document.getElementById('nb-market').value = '';
+            document.getElementById('nb-cost').value = '';
+            save();
+        }
+
+        function delNeighborhood(id) {
+            state.neighborhoods = state.neighborhoods.filter(n => n.id !== id);
+            save();
+        }
+
         function addFurniture() {
             const name = document.getElementById('new-furn-item').value;
             const price = document.getElementById('new-furn-price').value;
@@ -584,6 +730,7 @@
             state.apartments.push({
                 id: Date.now(),
                 name,
+                neighborhoodId: document.getElementById('apt-neighborhood-select').value,
                 rent: Number(rent),
                 condo: Number(document.getElementById('apt-condo').value),
                 address: document.getElementById('apt-address').value,
@@ -593,7 +740,7 @@
                 cons: document.getElementById('apt-cons').value.split(',').filter(x => x.trim())
             });
             
-            // Limpa form
+            // Limpa form inputs
             document.getElementById('apt-name').value = '';
             document.getElementById('apt-address').value = '';
             document.getElementById('apt-rent').value = '';
